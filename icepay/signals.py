@@ -9,30 +9,30 @@ from pretix.base.signals import logentry_display, register_payment_providers
 from pretix.presale.signals import html_head
 
 
-@receiver(register_payment_providers, dispatch_uid="payment_stripe")
+@receiver(register_payment_providers, dispatch_uid="payment_icepay")
 def register_payment_provider(sender, **kwargs):
-    from .payment import Stripe
+    from .payment import Icepay
 
-    return Stripe
+    return Icepay
 
 
-@receiver(html_head, dispatch_uid="payment_stripe_html_head")
+@receiver(html_head, dispatch_uid="payment_icepay_html_head")
 def html_head_presale(sender, request=None, **kwargs):
-    from .payment import Stripe
+    from .payment import Icepay
 
-    provider = Stripe(sender)
+    provider = Icepay(sender)
     url = resolve(request.path_info)
     if provider.is_enabled and ("checkout" in url.url_name or "order.pay" in url.url_name):
-        template = get_template('pretixplugins/stripe/presale_head.html')
+        template = get_template('pretixplugins/icepay/presale_head.html')
         ctx = {'event': sender, 'settings': provider.settings}
         return template.render(ctx)
     else:
         return ""
 
 
-@receiver(signal=logentry_display, dispatch_uid="stripe_logentry_display")
+@receiver(signal=logentry_display, dispatch_uid="icepay_logentry_display")
 def pretixcontrol_logentry_display(sender, logentry, **kwargs):
-    if logentry.action_type != 'pretix.plugins.stripe.event':
+    if logentry.action_type != 'pretix.plugins.icepay.event':
         return
 
     data = json.loads(logentry.data)

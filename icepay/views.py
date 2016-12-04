@@ -8,10 +8,10 @@ from django.views.decorators.http import require_POST
 
 from pretix.base.models import Order
 from pretix.base.services.orders import mark_order_refunded
-from pretix.plugins.stripe.payment import Stripe
+from pretix.plugins.icepay.payment import Icepay
 from pretix.presale.utils import event_view
 
-logger = logging.getLogger('pretix.plugins.stripe')
+logger = logging.getLogger('pretix.plugins.icepay')
 
 
 @csrf_exempt
@@ -32,7 +32,7 @@ def webhook(request, *args, **kwargs):
     else:
         return HttpResponse("Not interested in this data type", status=200)
 
-    prov = Stripe(request.event)
+    prov = Icepay(request.event)
     prov._init_api()
     try:
         charge = stripe.Charge.retrieve(charge_id)
@@ -52,7 +52,7 @@ def webhook(request, *args, **kwargs):
     except Order.DoesNotExist:
         return HttpResponse('Order not found', status=200)
 
-    order.log_action('pretix.plugins.stripe.event', data=event_json)
+    order.log_action('pretix.plugins.icepay.event', data=event_json)
 
     if order.status == Order.STATUS_PAID and (charge['refunds']['total_count'] or charge['dispute']):
         mark_order_refunded(order, user=None)

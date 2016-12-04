@@ -14,12 +14,12 @@ from pretix.base.services.mail import SendMailException
 from pretix.base.services.orders import mark_order_paid, mark_order_refunded
 from pretix.multidomain.urlreverse import build_absolute_uri
 
-logger = logging.getLogger('pretix.plugins.stripe')
+logger = logging.getLogger('pretix.plugins.icepay')
 
 
-class Stripe(BasePaymentProvider):
-    identifier = 'stripe'
-    verbose_name = _('Credit Card via Stripe')
+class Icepay(BasePaymentProvider):
+    identifier = 'icepay'
+    verbose_name = _('Credit Card via icepay')
 
     @property
     def settings_form_fields(self):
@@ -48,7 +48,7 @@ class Stripe(BasePaymentProvider):
         return "<div class='alert alert-info'>%s<br /><code>%s</code></div>" % (
             _('Please configure a <a href="https://dashboard.stripe.com/account/webhooks">Stripe Webhook</a> to '
               'the following endpoint in order to automatically cancel orders when charges are refunded externally.'),
-            build_absolute_uri(self.event, 'plugins:stripe:webhook')
+            build_absolute_uri(self.event, 'plugins:icepay:webhook')
         )
 
     def payment_is_valid_session(self, request):
@@ -134,7 +134,7 @@ class Stripe(BasePaymentProvider):
         else:
             if charge.status == 'succeeded' and charge.paid:
                 try:
-                    mark_order_paid(order, 'stripe', str(charge))
+                    mark_order_paid(order, 'icepay', str(charge))
                 except Quota.QuotaExceededException as e:
                     messages.error(request, str(e))
                 except SendMailException:
@@ -152,7 +152,7 @@ class Stripe(BasePaymentProvider):
             payment_info = json.loads(order.payment_info)
         else:
             payment_info = None
-        template = get_template('pretixplugins/stripe/pending.html')
+        template = get_template('pretixplugins/icepay/pending.html')
         ctx = {'request': request, 'event': self.event, 'settings': self.settings,
                'order': order, 'payment_info': payment_info}
         return template.render(ctx)
@@ -164,7 +164,7 @@ class Stripe(BasePaymentProvider):
                 payment_info['amount'] /= 100
         else:
             payment_info = None
-        template = get_template('pretixplugins/stripe/control.html')
+        template = get_template('pretixplugins/icepay/control.html')
         ctx = {'request': request, 'event': self.event, 'settings': self.settings,
                'payment_info': payment_info, 'order': order}
         return template.render(ctx)
