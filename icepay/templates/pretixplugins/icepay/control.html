@@ -3,15 +3,15 @@
 {% if payment_info %}
     {% if order.status == "p" %}
         <p>{% blocktrans trimmed %}
-            This order has been paid via Stripe.
+            This order has been paid via icepay.
         {% endblocktrans %}</p>
     {% elif order.status == "r" %}
         <p>{% blocktrans trimmed %}
-            This order has been planned to be paid via Stripe and has been marked as refunded.
+            This order has been planned to be paid via icepay and has been marked as refunded.
         {% endblocktrans %}</p>
     {% else %}
         <p>{% blocktrans trimmed %}
-            This order has been planned to be paid via Stripe, but the payment has not yet been completed.
+            This order has been planned to be paid via icepay, but the payment has not yet been completed.
         {% endblocktrans %}</p>
     {% endif %}
     {% if order.status == "p" %}
@@ -40,6 +40,6 @@
     {% endif %}
 {% else %}
     <p>{% blocktrans trimmed %}
-        This order has been planned to be paid via Stripe, but the payment has not yet been completed.
+        This order has been planned to be paid via Icepay, but the payment has not yet been completed.
     {% endblocktrans %}</p>
 {% endif %}
