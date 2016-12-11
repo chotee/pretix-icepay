@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 from pretix.base.signals import logentry_display, register_payment_providers
 from pretix.presale.signals import html_head
 
-
 @receiver(register_payment_providers, dispatch_uid="payment_icepay")
 def register_payment_provider(sender, **kwargs):
     from .payment import Icepay

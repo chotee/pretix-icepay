@@ -2,7 +2,7 @@ import json
 import logging
 from collections import OrderedDict
 
-import stripe
+import icepay
 from django import forms
 from django.contrib import messages
 from django.template.loader import get_template
@@ -19,7 +19,7 @@ logger = logging.getLogger('pretix.plugins.icepay')
 
 class Icepay(BasePaymentProvider):
     identifier = 'icepay'
-    verbose_name = _('Credit Card via icepay')
+    verbose_name = _('Ideal via icepay')
 
     @property
     def settings_form_fields(self):

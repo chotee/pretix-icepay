@@ -8,10 +8,10 @@ from django.views.decorators.http import require_POST
 
 from pretix.base.models import Order
 from pretix.base.services.orders import mark_order_refunded
-from pretix.plugins.icepay.payment import Icepay
+from pretix_icepay.payment import Icepay
 from pretix.presale.utils import event_view
 
-logger = logging.getLogger('pretix.plugins.icepay')
+logger = logging.getLogger('pretix_icepay')
 
 
 @csrf_exempt
