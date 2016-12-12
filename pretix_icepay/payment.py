@@ -14,7 +14,7 @@ from pretix.base.services.mail import SendMailException
 from pretix.base.services.orders import mark_order_paid, mark_order_refunded
 from pretix.multidomain.urlreverse import build_absolute_uri
 
-logger = logging.getLogger('pretix.plugins.icepay')
+logger = logging.getLogger('pretix_icepay')
 
 
 class Icepay(BasePaymentProvider):
@@ -25,22 +25,22 @@ class Icepay(BasePaymentProvider):
     def settings_form_fields(self):
         return OrderedDict(
             list(super().settings_form_fields.items()) + [
-                ('secret_key',
+                ('Merchant_id',
                  forms.CharField(
-                     label=_('Secret key'),
+                     label=_('Merchant ID'),
                  )),
-                ('publishable_key',
+                ('secret_code',
                  forms.CharField(
-                     label=_('Publishable key'),
+                     label=_('Secret code'),
                  )),
-                ('ui',
-                 forms.ChoiceField(
-                     label=_('User interface'),
-                     choices=(
-                         ('pretix', _('Simple (pretix design)')),
-                         ('checkout', _('Stripe Checkout')),
-                     )
-                 ))
+                # ('ui',
+                #  forms.ChoiceField(
+                #      label=_('User interface'),
+                #      choices=(
+                #          ('pretix', _('Simple (pretix design)')),
+                #          ('checkout', _('Stripe Checkout')),
+                #      )
+                #  ))
             ]
         )
 
@@ -48,7 +48,7 @@ class Icepay(BasePaymentProvider):
         return "<div class='alert alert-info'>%s<br /><code>%s</code></div>" % (
             _('Please configure a <a href="https://dashboard.stripe.com/account/webhooks">Stripe Webhook</a> to '
               'the following endpoint in order to automatically cancel orders when charges are refunded externally.'),
-            build_absolute_uri(self.event, 'plugins:icepay:webhook')
+            build_absolute_uri(self.event, 'plugins:pretix_icepay:webhook')
         )
 
     def payment_is_valid_session(self, request):

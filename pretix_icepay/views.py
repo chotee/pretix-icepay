@@ -52,7 +52,7 @@ def webhook(request, *args, **kwargs):
     except Order.DoesNotExist:
         return HttpResponse('Order not found', status=200)
 
-    order.log_action('pretix.plugins.icepay.event', data=event_json)
+    order.log_action('pretix_icepay.event', data=event_json)
 
     if order.status == Order.STATUS_PAID and (charge['refunds']['total_count'] or charge['dispute']):
         mark_order_refunded(order, user=None)
