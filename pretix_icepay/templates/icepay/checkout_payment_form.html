@@ -6,59 +6,61 @@
     </div>
     <noscript>
         <div class="alert alert-warning">
-            {% trans "For a credit card payment, please turn on JavaScript." %}
+            {% trans "For a payment, please turn on JavaScript." %}
         </div>
     </noscript>
-    <div class="form-group icepay-number">
-        <label class="control-label col-sm-2">
-            {% trans "Credit card number" %}
-        </label>
-        <div class="col-sm-4">
-            <input type="text" id="icepay_number" class="form-control" placeholder="4242 4242 4242 4242">
-            <span class="fa form-control-feedback sr-only"></span>
-        </div>
-    </div>
-    <div class="form-group icepay-exp">
-        <label class="control-label col-sm-2">
-            {% trans "Expiration date" %}
-        </label>
-        <div class="col-sm-2">
-            <input type="number" min="1" max="12" id="icepay_exp_month" class="form-control" placeholder=
-                    "{% trans "Month" %}">
-            <span class="fa form-control-feedback sr-only"></span>
-        </div>
-        <div class="col-sm-2">
-            <input type="number" min="{% now "Y" %}" id="icepay_exp_year" class="form-control" placeholder=
-            "{% trans "Year" %}">
-            <span class="fa form-control-feedback sr-only"></span>
-        </div>
-    </div>
-    <div class="form-group icepay-cvc">
-        <label class="control-label col-sm-2">
-            {% trans "Security code (CVC)" %}
-        </label>
-        <div class="col-sm-2">
-            <input type="text" maxlength="3" id="icepay_cvc" class="form-control" placeholder=
-                    "{% trans "123" %}">
-            <span class="fa form-control-feedback sr-only"></span>
-        </div>
-    </div>
-    <div class="form-group icepay-name">
-        <label class="control-label col-sm-2">
-            {% trans "Cardholder name" %}
-        </label>
-        <div class="col-sm-4">
-            <input type="text" id="icepay_name" class="form-control">
-        </div>
-    </div>
+    <!--<div class="form-group icepay-bank">-->
+        <!--<label class="control-label col-sm-2">-->
+            <!--{% trans "Select your bank" %}-->
+        <!--</label>-->
+        <!--<div class="col-sm-4">-->
+            <!--<select class="form-control" id="icepay_bank" name="icepay_bank" required="">-->
+                <!--{% for bank_id, bank_name in ideal_banks.items %}-->
+                    <!--<option value="{{ bank_id }}">{{bank_name}}</option>-->
+                <!--{% endfor %}-->
+            <!--</select>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="form-group icepay-exp">-->
+        <!--<label class="control-label col-sm-2">-->
+            <!--{% trans "Expiration date" %}-->
+        <!--</label>-->
+        <!--<div class="col-sm-2">-->
+            <!--<input type="number" min="1" max="12" id="icepay_exp_month" class="form-control" placeholder=-->
+                    <!--"{% trans "Month" %}">-->
+            <!--<span class="fa form-control-feedback sr-only"></span>-->
+        <!--</div>-->
+        <!--<div class="col-sm-2">-->
+            <!--<input type="number" min="{% now "Y" %}" id="icepay_exp_year" class="form-control" placeholder=-->
+            <!--"{% trans "Year" %}">-->
+            <!--<span class="fa form-control-feedback sr-only"></span>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="form-group icepay-cvc">-->
+        <!--<label class="control-label col-sm-2">-->
+            <!--{% trans "Security code (CVC)" %}-->
+        <!--</label>-->
+        <!--<div class="col-sm-2">-->
+            <!--<input type="text" maxlength="3" id="icepay_cvc" class="form-control" placeholder=-->
+                    <!--"{% trans "123" %}">-->
+            <!--<span class="fa form-control-feedback sr-only"></span>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="form-group icepay-name">-->
+        <!--<label class="control-label col-sm-2">-->
+            <!--{% trans "Cardholder name" %}-->
+        <!--</label>-->
+        <!--<div class="col-sm-4">-->
+            <!--<input type="text" id="icepay_name" class="form-control">-->
+        <!--</div>-->
+    <!--</div>-->
     <p>
         <em>{% blocktrans trimmed %}
-            Your payment will be processed by Icepay, Inc. Your credit card data will be transmitted directly to
-            icepay and never touches our servers.
+            For the payment you will be redirected to your bank. The payment will be completed there.
         {% endblocktrans %}</em>
-        <input type="hidden" name="icepay_token" value="" id="icepay_token" />
-        <input type="hidden" name="icepay_card_last4" value="" id="icepay_card_last4" />
-        <input type="hidden" name="icepay_card_brand" value="" id="icepay_card_brand" />
+        <!--<input type="hidden" name="icepay_token" value="" id="icepay_token" />-->
+        <!--<input type="hidden" name="icepay_card_last4" value="" id="icepay_card_last4" />-->
+        <!--<input type="hidden" name="icepay_card_brand" value="" id="icepay_card_brand" />-->
     </p>
 </div>
 
