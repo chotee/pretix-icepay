@@ -20,17 +20,18 @@ logger = logging.getLogger('pretix_icepay')
 PAYMENT_OPTIONS = []
 
 IDEAL_BANKS = {  # Code : Display name
-    'ABNAMRO': 'ABNAMRO',
-    'ASNBANK': 'ASNBANK',
-    'BUNQ': 'BUNQ',
+    'ABNAMRO': 'ABN AMRO',
+    'ASNBANK': 'ASN Bank',
+    'BUNQ': 'Bunq',
     'ING': 'ING',
-    'KNAB': 'KNAB',
-    'RABOBANK': 'RABOBANK',
-    'SNSBANK': 'SNSBANK',
-    'SNSREGIOBANK':'SNSREGIOBANK',
-    'TRIODOSBANK': 'TRIODOSBANK',
-    'VANLANSCHOT': 'VANLANSCHOT'
+    'KNAB': 'Knab',
+    'RABOBANK': 'Rabobank',
+    'SNSBANK': 'SNS Bank',
+    'SNSREGIOBANK':'RegioBank',
+    'TRIODOSBANK': 'Triodos Bank',
+    'VANLANSCHOT': 'van Lanshot'
 }
+
 
 class Icepay(BasePaymentProvider):
     identifier = 'icepay'
