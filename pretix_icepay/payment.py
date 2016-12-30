@@ -17,8 +17,6 @@ from pretix.multidomain.urlreverse import build_absolute_uri
 
 logger = logging.getLogger('pretix_icepay')
 
-PAYMENT_OPTIONS = []
-
 IDEAL_BANKS = {  # Code : Display name
     'ABNAMRO': 'ABN AMRO',
     'ASNBANK': 'ASN Bank',
@@ -100,8 +98,6 @@ class Icepay(BasePaymentProvider):
         merchant_id = self.settings.get('merchant_id')
         secret = self.settings.get('secret_code')
         client = IcepayClient(merchant_id, secret)
-        if not PAYMENT_OPTIONS:
-            PAYMENT_OPTIONS.extend(client.GetMyPaymentMethods())
         return client
 
     def payment_perform(self, request, order) -> str:
