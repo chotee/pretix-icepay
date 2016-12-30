@@ -79,19 +79,6 @@ class Icepay(BasePaymentProvider):
     def order_prepare(self, request, order):
         return self.checkout_prepare(request, None)
 
-    def checkout_prepare(self, request, cart):
-        # raise Exception(cart)
-        # token = request.POST.get('stripe_token', '')
-        #request.session['payment_stripe_token'] = token
-        #request.session['payment_icepay_bank'] = request.POST.get('payment_icepay_bank', '')
-    #     request.session['payment_stripe_last4'] = request.POST.get('stripe_card_last4', '')
-    #     if token == '':
-    #         messages.error(request, _('You may need to enable JavaScript for Stripe payments.'))
-    #         return False
-        return True
-
-
-
     # def payment_form_render(self, request) -> str:
     #     ui = self.settings.get('ui', default='pretix')
     #     # if ui == 'checkout':
