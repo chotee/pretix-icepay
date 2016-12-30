@@ -2,16 +2,53 @@ import json
 import logging
 
 import stripe
+from django.contrib import messages
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from pretix.base.models import Order
-from pretix.base.services.orders import mark_order_refunded
-from pretix_icepay.payment import Icepay
+from pretix.base.models import Order, Quota
+from pretix.base.services.orders import mark_order_paid, mark_order_refunded
+from pretix.multidomain.urlreverse import eventreverse
 from pretix.presale.utils import event_view
+from pretix_icepay.payment import Icepay
 
 logger = logging.getLogger('pretix_icepay')
+
+
+@event_view(require_live=False)
+def result(request, *args, **kwargs):
+    """Handle ICEPAY result after the user comes back from the payment page."""
+    provider = Icepay(request.event)
+    client = provider._icepay()
+    try:
+        client.validate_postback(request.GET)
+    except AssertionError:
+        logger.error('Invalid checksum on postback: %s', request.META['QUERY_STRING'])
+        messages.error(request, _('It looks like something went wrong with your payment'))
+        return redirect(eventreverse(
+            request.event, 'presale:event.checkout', kwargs={'step': 'payment'}))
+
+    # Valid postback, and thus ICEPAY response:
+    status = request.GET.get('Status')
+    if status == 'OK':
+        order = Order.objects.get(pk=request.GET['OrderID'])
+        try:
+            mark_order_paid(order, 'icepay')
+        except Quota.QuotaExceededException as e:
+            messages.error(request, str(e))
+        else:
+            view_params = {'order': order.code, 'secret': order.secret}
+            order_url = eventreverse(
+                request.event, 'presale:event.order', kwargs=view_params)
+            return redirect(order_url + '?paid=yes')
+    else:
+        messages.error(request, _(
+            'It looks like something went wrong with your payment'))
+        return redirect(eventreverse(
+            request.event, 'presale:event.checkout', kwargs={'step': 'payment'}))
 
 
 @csrf_exempt
