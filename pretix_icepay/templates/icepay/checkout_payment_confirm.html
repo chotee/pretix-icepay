@@ -1,12 +1,9 @@
 {% load i18n %}
 
 <p>{% blocktrans trimmed %}
-    The total amount will be withdrawn from your account.
+    Upon confirming your order, you will be redirected to our payment provider. Please follow the instructions provided.
 {% endblocktrans %}</p>
 <dl class="dl-horizontal">
-    <dt>{% trans "Card type" %}</dt>
-    <dd>{{ request.session.payment_icepay_brand }}</dd>
-    <dt>{% trans "Card number" %}</dt>
-    <dd>**** **** **** {{ request.session.payment_icepay_last4 }}</dd>
+    <dt>{% trans "Selected bank" %}</dt>
+    <dd>{{ bank_name }}</dd>
 </dl>
-

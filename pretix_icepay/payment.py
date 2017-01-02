@@ -90,7 +90,11 @@ class Icepay(BasePaymentProvider):
     #
     def checkout_confirm_render(self, request) -> str:
         template = get_template('icepay/checkout_payment_confirm.html')
-        ctx = {'request': request, 'event': self.event, 'settings': self.settings}
+        ctx = {
+            'bank_name': IDEAL_BANKS[request.session['payment_icepay_issuer']],
+            'request': request,
+            'event': self.event,
+            'settings': self.settings}
         return template.render(ctx)
     #
     # def order_can_retry(self, order):
