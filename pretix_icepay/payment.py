@@ -100,14 +100,14 @@ class Icepay(BasePaymentProvider):
     # def order_can_retry(self, order):
     #     return True
 
-    def _icepay(self):
-        merchant_id = self.settings.get('merchant_id')
-        secret = self.settings.get('secret_code')
-        client = IcepayClient(merchant_id, secret)
-        return client
+    def get_client(self):
+        """Returns an IcepayClient configured with the event's credentials."""
+        return IcepayClient(
+            self.settings.get('merchant_id'),
+            self.settings.get('secret_code'))
 
     def payment_perform(self, request, order) -> str:
-        client = self._icepay()
+        client = self.get_client()
         result_url = build_absolute_uri(
             request.event, 'plugins:pretix_icepay:result')
         checkout_params = {

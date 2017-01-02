@@ -22,7 +22,7 @@ logger = logging.getLogger('pretix_icepay')
 def result(request, *args, **kwargs):
     """Handle ICEPAY result after the user comes back from the payment page."""
     provider = Icepay(request.event)
-    client = provider._icepay()
+    client = provider.get_client()
     try:
         client.validate_postback(request.GET)
     except AssertionError:
