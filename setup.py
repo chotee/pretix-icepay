@@ -12,6 +12,7 @@ setup(
         'git+https://github.com/edelooff/icepay-python.git#egg=icepay-python',
     ],
     packages=['pretix_icepay'],
+    include_package_data=True,
     install_requires=['icepay_python'],
     url='https://github.com/chotee/pretix-icepay',
     entry_points={
