@@ -6,6 +6,7 @@ from icepay import IcepayClient
 
 from django import forms
 from django.contrib import messages
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
@@ -13,7 +14,7 @@ from pretix.base.models import Quota
 from pretix.base.payment import BasePaymentProvider
 from pretix.base.services.mail import SendMailException
 from pretix.base.services.orders import mark_order_paid, mark_order_refunded
-from pretix.multidomain.urlreverse import build_absolute_uri
+from pretix.multidomain.urlreverse import eventreverse, build_absolute_uri
 
 from requests import HTTPError
 
@@ -96,9 +97,9 @@ class Icepay(BasePaymentProvider):
             'event': self.event,
             'settings': self.settings}
         return template.render(ctx)
-    #
-    # def order_can_retry(self, order):
-    #     return True
+
+    def order_can_retry(self, order):
+        return True
 
     def get_client(self):
         """Returns an IcepayClient configured with the event's credentials."""
@@ -133,16 +134,10 @@ class Icepay(BasePaymentProvider):
         else:
             return response['PaymentScreenURL']
 
-    # def order_pending_render(self, request, order) -> str:
-    #     if order.payment_info:
-    #         payment_info = json.loads(order.payment_info)
-    #     else:
-    #         payment_info = None
-    #     template = get_template('icepay/pending.html')
-    #     ctx = {'request': request, 'event': self.event, 'settings': self.settings,
-    #            'order': order, 'payment_info': payment_info}
-    #     return template.render(ctx)
-    #
+    def order_pending_render(self, request, order) -> str:
+        template = get_template('icepay/pending.html')
+        return template.render()
+
     # def order_control_render(self, request, order) -> str:
     #     if order.payment_info:
     #         payment_info = json.loads(order.payment_info)
