@@ -28,13 +28,12 @@ def result(request, *args, **kwargs):
     except AssertionError:
         logger.error('Invalid checksum on postback: %s', request.META['QUERY_STRING'])
         messages.error(request, _('It looks like something went wrong with your payment'))
-        return redirect(eventreverse(
-            request.event, 'presale:event.checkout', kwargs={'step': 'payment'}))
+        return redirect(eventreverse(request.event, 'presale:event.index'))
 
     # Valid postback, and thus ICEPAY response:
     status = request.GET.get('Status')
+    order = Order.objects.get(pk=request.GET['OrderID'])
     if status == 'OK':
-        order = Order.objects.get(pk=request.GET['OrderID'])
         try:
             mark_order_paid(order, 'icepay')
         except Quota.QuotaExceededException as e:
@@ -48,7 +47,8 @@ def result(request, *args, **kwargs):
         messages.error(request, _(
             'It looks like something went wrong with your payment'))
         return redirect(eventreverse(
-            request.event, 'presale:event.checkout', kwargs={'step': 'payment'}))
+            request.event, 'presale:event.order', kwargs={
+                'order': order.code, 'secret': order.secret}))
 
 
 @csrf_exempt
