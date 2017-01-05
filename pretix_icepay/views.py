@@ -32,7 +32,7 @@ def result(request, *args, **kwargs):
 
     # Valid postback, and thus ICEPAY response:
     status = request.GET.get('Status')
-    order = Order.objects.get(pk=request.GET['OrderID'])
+    order = Order.objects.get(code=request.GET['Reference'])
     if status == 'OK':
         try:
             mark_order_paid(order, 'icepay')

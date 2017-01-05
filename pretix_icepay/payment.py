@@ -109,6 +109,17 @@ class Icepay(BasePaymentProvider):
 
     def payment_perform(self, request, order) -> str:
         client = self.get_client()
+
+        # Retrieve and increment attempt count to guarantee unique OrderID.
+        if order.payment_info is not None:
+          payment_info = json.loads(order.payment_info)
+          payment_info.setdefault('icepay_attempt', 0)
+          payment_info['icepay_attempt'] += 1
+        else:
+          payment_info = {'icepay_attempt': 1}
+        order.payment_info = json.dumps(payment_info)
+        order.save()
+
         result_url = build_absolute_uri(
             request.event, 'plugins:pretix_icepay:result')
         checkout_params = {
@@ -120,7 +131,8 @@ class Icepay(BasePaymentProvider):
                 'HTTP_X_FORWARDED_FOR', request.META['REMOTE_ADDR']),
             'Issuer': request.session['payment_icepay_issuer'],
             'Language': request.LANGUAGE_CODE.split('-')[0].upper(),
-            'OrderID': str(order.id),
+            'OrderID': '{}-{}'.format(order.id, payment_info['attempt']),
+            'Reference': str(order.code),
             'PaymentMethod': 'IDEAL',
             'URLCompleted': result_url,
             'URLError': result_url}
