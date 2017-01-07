@@ -55,4 +55,4 @@ def pretixcontrol_logentry_display(sender, logentry, **kwargs):
         text = _('Dispute closed. Status: {}').format(data['data']['object']['status'])
 
     if text:
-        return _('Stripe reported an event: {}').format(text)
+        return _('ICEPAY reported an event: {}').format(text)
