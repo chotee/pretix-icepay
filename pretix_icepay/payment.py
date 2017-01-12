@@ -131,7 +131,8 @@ class Icepay(BasePaymentProvider):
                 'HTTP_X_FORWARDED_FOR', request.META['REMOTE_ADDR']),
             'Issuer': request.session['payment_icepay_issuer'],
             'Language': request.LANGUAGE_CODE.split('-')[0].upper(),
-            'OrderID': '{}-{}'.format(order.id, payment_info['attempt']),
+            'OrderID': '{}-{}'.format(
+                order.id, payment_info['icepay_attempt']),
             'Reference': str(order.code),
             'PaymentMethod': 'IDEAL',
             'URLCompleted': result_url,
