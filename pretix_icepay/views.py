@@ -19,36 +19,41 @@ logger = logging.getLogger('pretix_icepay')
 
 
 @event_view(require_live=False)
-def result(request, *args, **kwargs):
-    """Handle ICEPAY result after the user comes back from the payment page."""
-    provider = Icepay(request.event)
-    client = provider.get_client()
-    try:
-        client.validate_postback(request.GET)
-    except AssertionError:
-        logger.error('Invalid checksum on postback: %s', request.META['QUERY_STRING'])
-        messages.error(request, _('It looks like something went wrong with your payment'))
+def failure(request, *args, **kwargs):
+    """Handle failed return from ICEPAY payment screen."""
+    messages.error(request, _(
+        'It looks like something went wrong with your payment'))
+    # Don't send user to order page if ICEPAY checksum is bad
+    if not valid_icepay_postback(request):
+        return redirect(eventreverse(request.event, 'presale:event.index'))
+
+    # Load order and redirect user to payment page again
+    order = Order.objects.get(code=request.GET['Reference'])
+    return redirect(eventreverse(
+        request.event, 'presale:event.order', kwargs={
+            'order': order.code, 'secret': order.secret}))
+
+
+@event_view(require_live=False)
+def success(request, *args, **kwargs):
+    """Handle successful return from ICEPAY payment screen."""
+    if not valid_icepay_postback(request):
+        messages.error(request, _(
+            'It looks like something went wrong with your payment'))
         return redirect(eventreverse(request.event, 'presale:event.index'))
 
     # Valid postback, and thus ICEPAY response:
-    status = request.GET.get('Status')
     order = Order.objects.get(code=request.GET['Reference'])
-    if status == 'OK':
-        try:
-            mark_order_paid(order, 'icepay')
-        except Quota.QuotaExceededException as e:
-            messages.error(request, str(e))
-        else:
-            view_params = {'order': order.code, 'secret': order.secret}
-            order_url = eventreverse(
-                request.event, 'presale:event.order', kwargs=view_params)
-            return redirect(order_url + '?paid=yes')
+    try:
+        mark_order_paid(order, 'icepay')
+    except Quota.QuotaExceededException as e:
+        # User is fucked.. what do?
+        messages.error(request, str(e))
     else:
-        messages.error(request, _(
-            'It looks like something went wrong with your payment'))
-        return redirect(eventreverse(
-            request.event, 'presale:event.order', kwargs={
-                'order': order.code, 'secret': order.secret}))
+        view_params = {'order': order.code, 'secret': order.secret}
+        order_url = eventreverse(
+            request.event, 'presale:event.order', kwargs=view_params)
+        return redirect(order_url + '?paid=yes')
 
 
 @csrf_exempt
@@ -95,3 +100,16 @@ def webhook(request, *args, **kwargs):
         mark_order_refunded(order, user=None)
 
     return HttpResponse(status=200)
+
+
+def valid_icepay_postback(request):
+    """Returns whether or not the checksum of ICEPAY parameters is correct."""
+    provider = Icepay(request.event)
+    client = provider.get_client()
+    try:
+        client.validate_postback(request.GET)
+        return True
+    except AssertionError:
+        logger.error(
+            'Invalid checksum on postback: %s', request.META['QUERY_STRING'])
+    return False

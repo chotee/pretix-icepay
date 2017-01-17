@@ -3,12 +3,14 @@ from django.conf.urls import (
     url)
 
 from .views import (
-    result,
+    failure,
+    success,
     webhook)
 
 event_patterns = [
     url(r'^icepay/', include([
-        url(r'^result/$', result, name='result'),
+        url(r'^failure/$', failure, name='failure'),
+        url(r'^success/$', success, name='success'),
         url(r'^webhook/$', webhook, name='webhook'),
     ])),
 ]

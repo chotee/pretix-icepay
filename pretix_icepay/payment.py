@@ -120,8 +120,6 @@ class Icepay(BasePaymentProvider):
         order.payment_info = json.dumps(payment_info)
         order.save()
 
-        result_url = build_absolute_uri(
-            request.event, 'plugins:pretix_icepay:result')
         checkout_params = {
             'Amount': int(order.total * 100),
             'Country': 'NL',
@@ -135,8 +133,10 @@ class Icepay(BasePaymentProvider):
                 order.id, payment_info['icepay_attempt']),
             'Reference': str(order.code),
             'PaymentMethod': 'IDEAL',
-            'URLCompleted': result_url,
-            'URLError': result_url}
+            'URLCompleted': build_absolute_uri(
+                request.event, 'plugins:pretix_icepay:success'),
+            'URLError': build_absolute_uri(
+                request.event, 'plugins:pretix_icepay:failure')}
         try:
             response = client.Checkout(checkout_params)
         except HTTPError as e:
