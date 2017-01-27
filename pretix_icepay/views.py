@@ -1,7 +1,5 @@
-import json
 import logging
 
-import stripe
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -10,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from pretix.base.models import Order, Quota
-from pretix.base.services.orders import mark_order_paid, mark_order_refunded
+from pretix.base.services.orders import mark_order_paid
 from pretix.multidomain.urlreverse import eventreverse
 from pretix.presale.utils import event_view
 from pretix_icepay.payment import Icepay
@@ -19,79 +17,68 @@ logger = logging.getLogger('pretix_icepay')
 
 
 @event_view(require_live=False)
-def result(request, *args, **kwargs):
-    """Handle ICEPAY result after the user comes back from the payment page."""
-    provider = Icepay(request.event)
-    client = provider.get_client()
-    try:
-        client.validate_postback(request.GET)
-    except AssertionError:
-        logger.error('Invalid checksum on postback: %s', request.META['QUERY_STRING'])
-        messages.error(request, _('It looks like something went wrong with your payment'))
+def failure(request, *args, **kwargs):
+    """Handle failed return from ICEPAY payment screen."""
+    messages.error(request, _(
+        'It looks like something went wrong with your payment'))
+    # Don't send user to order page if ICEPAY checksum is bad
+    if not valid_icepay_postback(request):
+        return redirect(eventreverse(request.event, 'presale:event.index'))
+
+    # Load order and redirect user to payment page again
+    order = Order.objects.get(code=request.GET['Reference'])
+    return redirect(eventreverse(
+        request.event, 'presale:event.order', kwargs={
+            'order': order.code, 'secret': order.secret}))
+
+
+@event_view(require_live=False)
+def success(request, *args, **kwargs):
+    """Handle successful return from ICEPAY payment screen."""
+    if not valid_icepay_postback(request):
+        messages.error(request, _(
+            'It looks like something went wrong with your payment'))
         return redirect(eventreverse(request.event, 'presale:event.index'))
 
     # Valid postback, and thus ICEPAY response:
-    status = request.GET.get('Status')
     order = Order.objects.get(code=request.GET['Reference'])
-    if status == 'OK':
-        try:
-            mark_order_paid(order, 'icepay')
-        except Quota.QuotaExceededException as e:
-            messages.error(request, str(e))
-        else:
-            view_params = {'order': order.code, 'secret': order.secret}
-            order_url = eventreverse(
-                request.event, 'presale:event.order', kwargs=view_params)
-            return redirect(order_url + '?paid=yes')
+    try:
+        mark_order_paid(order, 'icepay')
+    except Quota.QuotaExceededException as e:
+        # User is fucked.. what do?
+        messages.error(request, str(e))
     else:
-        messages.error(request, _(
-            'It looks like something went wrong with your payment'))
-        return redirect(eventreverse(
-            request.event, 'presale:event.order', kwargs={
-                'order': order.code, 'secret': order.secret}))
+        view_params = {'order': order.code, 'secret': order.secret}
+        order_url = eventreverse(
+            request.event, 'presale:event.order', kwargs=view_params)
+        return redirect(order_url + '?paid=yes')
 
 
 @csrf_exempt
 @require_POST
 @event_view(require_live=False)
 def webhook(request, *args, **kwargs):
-    event_json = json.loads(request.body.decode('utf-8'))
-
-    # We do not check for the event type as we are not interested in the event it self,
-    # we just use it as a trigger to look the charge up to be absolutely sure.
-    # Another reason for this is that stripe events are not authenticated, so they could
-    # come from anywhere.
-
-    if event_json['data']['object']['object'] == "charge":
-        charge_id = event_json['data']['object']['id']
-    elif event_json['data']['object']['object'] == "dispute":
-        charge_id = event_json['data']['object']['charge']
-    else:
-        return HttpResponse("Not interested in this data type", status=200)
-
-    prov = Icepay(request.event)
-    prov._init_api()
-    try:
-        charge = stripe.Charge.retrieve(charge_id)
-    except stripe.error.StripeError:
-        logger.exception('Stripe error on webhook. Event data: %s' % str(event_json))
-        return HttpResponse('Charge not found', status=500)
-
-    metadata = charge['metadata']
-    if 'event' not in metadata:
-        return HttpResponse('Event not given in charge metadata', status=200)
-
-    if int(metadata['event']) != request.event.pk:
-        return HttpResponse('Not interested in this event', status=200)
-
-    try:
-        order = request.event.orders.get(id=metadata['order'])
-    except Order.DoesNotExist:
-        return HttpResponse('Order not found', status=200)
-
-    order.log_action('pretix_icepay.event', data=event_json)
-
-    if order.status == Order.STATUS_PAID and (charge['refunds']['total_count'] or charge['dispute']):
-        mark_order_refunded(order, user=None)
-
+    """Handle ICEPAY postbacks to update order payment status."""
+    if valid_icepay_postback(request) and request.POST.get('Status') == 'OK':
+        order = Order.objects.get(code=request.POST['Reference'])
+        try:
+            mark_order_paid(order, 'icepay')
+        except Quota.QuotaExceededException:
+            logger.exception(
+                'Out of tickets in response to ICEPAY order %s', order.code)
     return HttpResponse(status=200)
+
+
+def valid_icepay_postback(request):
+    """Returns whether or not the checksum of ICEPAY parameters is correct."""
+    provider = Icepay(request.event)
+    client = provider.get_client()
+    if request.method not in {'GET', 'POST'}:
+        return False
+    try:
+        parameters = getattr(request, request.method)
+        client.validate_postback(parameters)
+        return True
+    except AssertionError:
+        logger.error('ICEPAY: Bad checksum on postback: %r', parameters)
+    return False
