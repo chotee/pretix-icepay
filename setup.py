@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pretix-icepay',
-    version='0.0.1',
+    version='0.0.2',
     description='Pretix extension for the Icepay payment provider.',
     author='chotee',
     author_email='chotee@openended.eu',
