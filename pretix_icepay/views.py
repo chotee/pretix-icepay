@@ -55,7 +55,6 @@ def success(request, *args, **kwargs):
 
 
 @csrf_exempt
-@require_POST
 @event_view(require_live=False)
 def webhook(request, *args, **kwargs):
     """Handle ICEPAY postbacks to update order payment status."""
