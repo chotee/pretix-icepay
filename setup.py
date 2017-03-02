@@ -8,12 +8,9 @@ setup(
     description='Pretix extension for the Icepay payment provider.',
     author='chotee',
     author_email='chotee@openended.eu',
-    dependency_links=[
-        'git+https://github.com/edelooff/icepay-python.git#egg=icepay-python',
-    ],
     packages=['pretix_icepay'],
     include_package_data=True,
-    install_requires=['icepay_python'],
+    install_requires=['icepay-python>=0.4'],
     url='https://github.com/chotee/pretix-icepay',
     entry_points={
         'pretix.plugin': 'pretix_icepay = pretix_icepay:PretixPluginMeta'}
