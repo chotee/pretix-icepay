@@ -1,32 +1,15 @@
 import json
 
-from django.core.urlresolvers import resolve
 from django.dispatch import receiver
-from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
 from pretix.base.signals import logentry_display, register_payment_providers
-from pretix.presale.signals import html_head
+
 
 @receiver(register_payment_providers, dispatch_uid="payment_icepay")
 def register_payment_provider(sender, **kwargs):
     from .payment import Icepay
-
     return Icepay
-
-
-@receiver(html_head, dispatch_uid="payment_icepay_html_head")
-def html_head_presale(sender, request=None, **kwargs):
-    from .payment import Icepay
-
-    provider = Icepay(sender)
-    url = resolve(request.path_info)
-    if provider.is_enabled and ("checkout" in url.url_name or "order.pay" in url.url_name):
-        template = get_template('icepay/presale_head.html')
-        ctx = {'event': sender, 'settings': provider.settings}
-        return template.render(ctx)
-    else:
-        return ""
 
 
 @receiver(signal=logentry_display, dispatch_uid="icepay_logentry_display")

@@ -1,2 +1,1 @@
-recursive-include pretix_icepay/static *.js
 recursive-include pretix_icepay/templates *.html
